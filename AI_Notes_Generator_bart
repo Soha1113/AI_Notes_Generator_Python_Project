@@ -1,0 +1,34 @@
+# Import required libraries
+from transformers import BartForConditionalGeneration, BartTokenizer
+# Load pre-trained BART model and tokenizer
+tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
+def generate_notes(text):
+ # Step 1: Preprocess text
+ inputs = tokenizer.encode(text, return_tensors='pt', max_length=1024, truncation=True)
+ 
+ # Step 2: Summarize text
+ summary_ids = model.generate(inputs, max_length=150, min_length=50, length_penalty=2.0, num_beams=4, 
+early_stopping=True)
+ summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+ 
+ # Step 3: Structure notes (simplified)
+ notes = {
+ "Definition": summary.split('.')[0] + '.',
+ "Key Points": summary.split('.')[1:3],
+ "Advantages": ["Time-saving", "Improved learning efficiency", "Consistent format"],
+ "Applications": ["Student revision", "Lecture preparation", "Quick study material"]
+ }
+ return notes
+# Example usage
+topic = "Artificial Intelligence in education improves learning efficiency by automating tasks like note-making and 
+content summarization."
+notes = generate_notes(topic)
+print("AI Generated Notes:")
+for section, content in notes.items():
+ print(f"\n{section}:")
+ if isinstance(content, list):
+ for item in content:
+ print(f"- {item.strip()}")
+ else:
+ print(content)
